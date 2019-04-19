@@ -1,4 +1,4 @@
-### Proyecto de Análisis y Diseño de Algoritmos 2016-2
+### Proyecto de Análisis y Diseño de Algoritmos 2018-2
 
 El Objetivo del proyecto propuesto fue desarrollar una herramienta que facilite al usuario el análisis de los algoritmos iterativos. Dicho proyecto debe cumplir con los siguientes requisitos principales:
 
