@@ -10,15 +10,25 @@ El Objetivo del proyecto propuesto fue desarrollar una herramienta que facilite 
 Para satisfacer los requisitos planteados se decidió utilizar como lenguaje de programación Python haciendo uso de las siguientes librerías:
 
 - PLY (Python  Lex-Yacc) http://www.dabeaz.com/ply/ 
+```bash
     pip3 install ply
+```
 - PyQt4 https://www.riverbankcomputing.com/software/pyqt/download
+```bash
     pip3 install PyQt5
+```
 - Qscintilla https://riverbankcomputing.com/software/qscintilla/intro
+```bash
     pip3 install QScintilla
+```
 - Matplotlib http://matplotlib.org 
+```bash
     pip3 install matplotlib
+```
 - NetworkX https://networkx.github.io/ 
+```bash
     pip3 install networkx
+```
 
 ### Preview
 
