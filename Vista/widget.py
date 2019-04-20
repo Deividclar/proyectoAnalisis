@@ -28,7 +28,7 @@ class widget(QWidget):
         self.terminal.setReadOnly(True) #hacemos la terminal en modo solo lectura
         self.terminal.append(spanh+"Terminal v0.1 >>>"+spanb)
         self.estado.setReadOnly(True)   #hacemos el area de estado en modo solo lectura
-        self.estado.append(spanh+'Estado Variables >>>'+spanb)
+        self.estado.append(spanh+'State Variables >>>'+spanb)
         font = QFont('Arial')           #fuente que se utilizara para el area de estado y la terminal
         font.setPointSize(8)
         font.setBold(True)
