@@ -9,7 +9,6 @@ import Vista.statusbar as st
 from Modelo.lexclass import *
 import Modelo.semantico as semantico
 from Modelo.colores import *
-from Vista.grafica import *
 from Modelo.worker import *
 
 import time, threading
@@ -56,8 +55,6 @@ class ventana(QMainWindow):
         self.sema = semantico.Semantico(self.principal.estado, self.principal.terminal, self.principal.editor)
         #hilo que manejara el analizador semantico
         self.hilo = threading.Thread()
-        #hilo que maneja el modo automatico
-        self.hiloAutomatico = threading.Thread()
 
 
         ##barra de estado inferior
@@ -72,6 +69,12 @@ class ventana(QMainWindow):
 
         #velocidad del modo automatico
         self.velocidad = 50;
+
+        #hilo que maneja el modo automatico
+        self.timer = QTimer()
+        self.timer.timeout.connect(self.__continue_line)
+
+        self.timer.setInterval((self.velocidad + 1) * 50)
 
         # labelSlider = QLabel(self)
         # labelSlider.setText('Velocidad')
@@ -109,7 +112,6 @@ class ventana(QMainWindow):
         self.actionInfo.setIcon(QIcon('Imagenes/Info.png'))
         self.actionBreakpoints.setIcon(QIcon('Imagenes/location.png'))
         self.actionTree.setIcon(QIcon('Imagenes/brush.png'))
-        self.actionTimes.setIcon(QIcon('Imagenes/graph.png'))
         self.actionAutomatic.setIcon(QIcon('Imagenes/graph.png'))
 
 
@@ -130,7 +132,6 @@ class ventana(QMainWindow):
         self.actionExit.triggered.connect(self.__salir)
         self.actionBreakpoints.triggered.connect(self.__mostrarLineasMarcadas)
         self.actionInfo.triggered.connect(self.__info)
-        self.actionTimes.triggered.connect(self.__mostrarTiempos)
         self.actionAutomatic.triggered.connect(self.__automatico)
 
         #self.accion_lineas.triggered.connect(self.mostrarLineasMarcadas)
@@ -177,7 +178,6 @@ class ventana(QMainWindow):
         #self.Barra.addAction(self.actionClearEst)
         self.Barra.addAction(self.actionBreakpoints)
         self.Barra.addAction(self.actionTree)
-        self.Barra.addAction(self.actionTimes)
         self.Barra.addSeparator()
         self.Barra.addAction(self.actionAutomatic)
 
@@ -191,6 +191,7 @@ class ventana(QMainWindow):
     def __info(self):
         msg = QMessageBox()
         msg.setIcon(QMessageBox.Information)
+        msg.setWindowTitle("Info")
 
         msg.setText("Editor \n\n\nAngey Velez Vela \nDeivid Steven Gonzalez\n\n\nUniversidad de caldas\n2019")
         msg.exec_()
@@ -247,21 +248,24 @@ class ventana(QMainWindow):
         pos = self.principal.editor.getPosicion()
         texto = self.__getLine(pos)
 
-        if(self.sema != None and self.hilo.isAlive()):
-            if self.sema.variables_actuales != None:
-                self.principal.estado.clear() #limpiamos las variables anteriores
-                self.__mostrar_variables(self.sema.variables_actuales) #se muestran las variables
-                #self.sema.arbolito.get_root().print_tree()
+        if(self.sema != None):
+            if self.hilo.isAlive():
+                if self.sema.variables_actuales != None:
+                    self.principal.estado.clear() #limpiamos las variables anteriores
+                    self.__mostrar_variables(self.sema.variables_actuales) #se muestran las variables
+                    #self.sema.arbolito.get_root().print_tree()
 
-            actual = self.sema.ambiente_actual  #nodo actual
-            root = self.sema.arbolito.get_root() #raiz del arbol
-            nodo = self.sema.arbolito.find(actual, root) #se busca el nodo actual desde la raiz
-            nodo.activo = True #se hace el nodo como activo
-            self.principal.grafico.arbolito = self.sema.arbolito
-            self.principal.grafico.dibujar() #se dibuja el arbol
-            nodo.activo = False #se hace el nodo como no activo
+                actual = self.sema.ambiente_actual  #nodo actual
+                root = self.sema.arbolito.get_root() #raiz del arbol
+                nodo = self.sema.arbolito.find(actual, root) #se busca el nodo actual desde la raiz
+                nodo.activo = True #se hace el nodo como activo
+                self.principal.grafico.arbolito = self.sema.arbolito
+                self.principal.grafico.dibujar() #se dibuja el arbol
+                nodo.activo = False #se hace el nodo como no activo
 
-            self.sema.avanzar = False #se para el avance de linea para poder que sea paso a paso
+                self.sema.avanzar = False #se para el avance de linea para poder que sea paso a paso
+            else: 
+                self.timer.stop()
         else:
             msg = QMessageBox()
             msg.setIcon(QMessageBox.Warning)
@@ -290,16 +294,6 @@ class ventana(QMainWindow):
             lineas = self.sema.lineas_marcadas
             self.principal.terminal.append(str(lineas))
         #self.principal.estado.show()
-
-    # -------------------------------------------------------------------------------------------------
-    #       muestra el numero de ejecuciones y los tiempos de ejecucion por cada uno
-    # -------------------------------------------------------------------------------------------------
-    def __mostrarTiempos(self):
-        self.dicci = self.sema.dicci
-        self.brek = self.sema.dicci_break
-        self.principal.terminal.append(str(self.dicci))
-        grafica = grafica(self.dicci,self.brek)
-        #grafica.exec()
 
 
     # -------------------------------------------------------------------------------------------------
@@ -336,19 +330,19 @@ class ventana(QMainWindow):
 
     def __changeValue(self, value):
         self.velocidad = value
-        print(value)
+        self.timer.setInterval((self.velocidad + 1) * 50)
+        print((self.velocidad + 1) * 50)
 
     def __automatico(self):
-        if (not self.hiloAutomatico.isAlive()):
+        if self.hilo.isAlive():
+            self.timer.start()
+        else: 
+            msg = QMessageBox()
+            msg.setIcon(QMessageBox.Warning)
+            msg.setWindowTitle("Automatico")
 
-            self.hiloAutomatico = threading.Thread(target=self.__b);
-            self.hiloAutomatico.start()
-            
-
-    def __b(self):
-        while (self.sema != None):
-            self.__continue_line();
-            time.sleep(self.velocidad * 0.02)
+            msg.setText("Debe compilar el código, antes de la ejecución automatica")
+            msg.exec_()
 
     # -------------------------------------------------------------------------------------------------
     #           metodo principal inicia el hilo que hara el analisis sintactico y semantico
