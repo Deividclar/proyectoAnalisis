@@ -1,12 +1,12 @@
-from Modelo.lexclass import *
+from .lexclass import *
 import ply.yacc as yacc
 import queue as queue
 import networkx as nx
 import time
 import threading
 import math
-from Modelo.colores import *
-from Modelo.n_ary_tree import *
+from .colores import *
+from .n_ary_tree import *
 
 
 
@@ -58,10 +58,13 @@ class Semantico:
         self.arbolito = n_ary_tree()    #arbol de entornos
         self.ambientes = 0              #contador de ambientes para determinar el padre de cada entorno
 
-        self.tiempito = 0               #tiempo que se demora la ejecucion
+        self.tiempo = 0               #tiempo que se demora la ejecucion
         self.dicci = {}                 #contiene las ejecuciones y sus tiempos reales
         self.dicci_break={}             #contiene las ejecuciones y sus tiempos teoricos(conteo de breackpoints)
         self.contador = 0
+
+        self.inicio = 0
+        self.fin = 0
 
         self.area = a
         self.terminal = trm
@@ -97,7 +100,11 @@ class Semantico:
     # -------------------------------------------------------------------------------------------------
     def p_bloqueP(self,p):
         'bloqueP : declaracionPrincipal bloque'
+        print(p)
         self.tabla_principal = p[2] #-> tabla principal que tiene como forma una tupla ((),((),()))
+        print(self.tabla_principal)
+        self.inicio = p.slice[2].lineno + 1
+        self.fin = p.slice[2].endlineno - 1
         # print("Tabla principal : "+str(tabla_principal))
 
 
@@ -112,9 +119,9 @@ class Semantico:
 
 
         #self.limpiar_variables()  # limpiamos las variables despues de que termine la ejecucion
-        print(self.tiempito)
-        self.terminal.append("Terminado en :"+str(self.tiempito))
-        self.dicci[self.contador] = self.tiempito #se añade el tiempito al diccionario
+        print(self.tiempo)
+        self.terminal.append("Terminado en :"+str(self.tiempo))
+        self.dicci[self.contador] = self.tiempo #se añade el tiempo al diccionario
 
         sum=0
         for i in self.lineas_marcadas.values():
@@ -149,11 +156,11 @@ class Semantico:
             x = 1  # esto es para que no me saque error porque el while no tiene nada
         # print("Avanzo") # cuando es false entonces imprime esto y sigue con el proceso
 
-        if (self.detener == True): # detenemos el programa
-            self.limpiar_variables()  # limpiamos variables antes se salir
-            exit(1)
+        # if (self.detener == True): # detenemos el programa
+        #     self.limpiar_variables()  # limpiamos variables antes se salir
+        #     exit(1)
 
-        self.avanzar = True # lo hacemos true para que se detenga en la siguiente ejecucion
+        self.avanzar = not self.detener # lo hacemos true para que se detenga en la siguiente ejecucion
 
         self.variables_actuales = None
 
@@ -207,7 +214,7 @@ class Semantico:
 
 
                                 fint = time.time()
-                                #self.tiempito = (fint-iniciot)
+                                #self.tiempo = (fint-iniciot)
                                 self.run(tabla[1], variables,padre)
 
                             else:
@@ -243,7 +250,7 @@ class Semantico:
                                     self.lineas_marcadas[tabla[2]] += 1
 
                                 fint = time.time()
-                                self.tiempito = (fint - iniciot)
+                                self.tiempo = (fint - iniciot)
                                 self.run(tabla[1], variables,padre)
 
                             else:
@@ -286,7 +293,7 @@ class Semantico:
                         self.lineas_marcadas[tabla[2]] += 1
 
                     fint = time.time()
-                    self.tiempito = (fint-iniciot)
+                    self.tiempo = (fint-iniciot)
                     self.run(primera_parte_si[1],
                         variables,padre)  ## ejecuto el metodo con lo que viene dentro del si es decir contenidoBloque
                 else:
@@ -294,11 +301,11 @@ class Semantico:
                     # print("no cumple condicion")
                     # print("Sentencia Si no: " + str(tabla[2]))
                     fint = time.time()
-                    self.tiempito = (fint - iniciot)
+                    self.tiempo = (fint - iniciot)
                     self.run(primera_parte_si[2], variables,padre)  ## ejecuto el metodo con lo que tiene el sino contenidoSino
 
                 fint = time.time()
-                self.tiempito = (fint - iniciot)
+                self.tiempo = (fint - iniciot)
 
                 self.run(tabla[1],
                     variables,padre)  ##llamo el metodo con el hermano derecho es decir con el bloqueContenido externo
@@ -336,7 +343,7 @@ class Semantico:
                     # print(result_cond)
 
                 fint = time.time()
-                self.tiempito = (fint - iniciot)
+                self.tiempo = (fint - iniciot)
 
                 self.run(tabla[1], variables,padre)
             elif tabla[0][0] == 'para':
@@ -375,7 +382,7 @@ class Semantico:
                         self.run(segunda_parte_para[3], variables,padre)  # ejecuto el metodo con el bloque que esta dentro del for
 
                     fint = time.time()
-                    self.tiempito = (fint - iniciot)
+                    self.tiempo = (fint - iniciot)
 
                     self.run(tabla[1], variables,padre)  # ejecuto lo que hay en el bloque despues del for
                 else:
@@ -410,7 +417,7 @@ class Semantico:
                     result_cond = eval(cad_eval)
 
                 fint = time.time()
-                self.tiempito = (fint - iniciot)
+                self.tiempo = (fint - iniciot)
 
                 self.run(tabla[1], variables,padre)
 
@@ -430,7 +437,7 @@ class Semantico:
                 self.terminal.append(spanh_azul_claro + ">>>>>>   " + spanb + spanh_verde + valor_evaluado + spanb)
                 # print("Sentencia escribir: " + str(tabla[2]))
                 fint = time.time()
-                self.tiempito = (fint - iniciot)
+                self.tiempo = (fint - iniciot)
                 self.run(tabla[1], variables,padre)
 
 
@@ -517,7 +524,7 @@ class Semantico:
                             # encolamos
                             cola.append(valor_encolar)  # encolamos
                             fint = time.time()
-                            self.tiempito = (fint - iniciot)
+                            self.tiempo = (fint - iniciot)
                             self.run(tabla[1], variables,padre)
 
                         else:
@@ -591,7 +598,7 @@ class Semantico:
 
                             pila.append(valor_apilar)  # apilamos
                             fint = time.time()
-                            self.tiempito = (fint-iniciot)
+                            self.tiempo = (fint-iniciot)
                             self.run(tabla[1], variables, padre)
 
                         else:
@@ -664,7 +671,7 @@ class Semantico:
                             # termino el for
                             lista.append(valor_adicionar)  # adicionamos
                             fint = time.time()
-                            self.tiempito = (fint - iniciot)
+                            self.tiempo = (fint - iniciot)
                             self.run(tabla[1], variables,padre)
 
                         else:
@@ -738,7 +745,7 @@ class Semantico:
                             # termino el for
                             lista.remove(valor_remover)  # adicionamos
                             fint = time.time()
-                            self.tiempito = (fint - iniciot)
+                            self.tiempo = (fint - iniciot)
                             self.run(tabla[1], variables,padre)
 
                         else:
@@ -794,7 +801,7 @@ class Semantico:
                             # termino el for
                             lista.sort()  # adicionamos
                             fint = time.time()
-                            self.tiempito = (fint - iniciot)
+                            self.tiempo = (fint - iniciot)
                             self.run(tabla[1], variables,padre)
 
                         else:
@@ -867,7 +874,7 @@ class Semantico:
                             # termino el for
                             grafo.add_node(valor_nodo)  # adicionamos
                             fint = time.time()
-                            self.tiempito = (fint - iniciot)
+                            self.tiempo = (fint - iniciot)
                             self.run(tabla[1], variables,padre)
 
                         else:
@@ -970,7 +977,7 @@ class Semantico:
                             # termino el for
                             grafo.add_edge(valor_nodo_origen, valor_nodo_destino, weight=valor_nodo_peso)  # adicionamos
                             fint = time.time()
-                            self.tiempito = (fint - iniciot)
+                            self.tiempo = (fint - iniciot)
                             self.run(tabla[1], variables,padre)
 
                         else:
@@ -1111,7 +1118,7 @@ class Semantico:
 
                     # print(procedimiento_llamado[1])
                     fint = time.time()
-                    self.tiempito = (fint - iniciot)
+                    self.tiempo = (fint - iniciot)
 
                     print("agrego ambiente", self.arbolito.add2(self.ambientes, padre, "Procedimiento : " + str(
                         nombre_procedure_llamado) + "\nParametros pasados " + str(variables_procedimientos)))
@@ -1136,7 +1143,7 @@ class Semantico:
                 #self.editor.setCursorPosition(tabla[2] - 1, 0)
                 #print(tabla)
                 fint = time.time()
-                self.tiempito = (fint - iniciot)
+                self.tiempo = (fint - iniciot)
                 if tabla[2] in self.lineas_marcadas.keys():
                     self.lineas_marcadas[tabla[2]] += 1
                 return valor
@@ -2528,10 +2535,10 @@ class Semantico:
     def p_llamar_procedure_vacio(self,p):
         'llamarProcedure : CALL PROCEDURE ID PA error PC PUNTOCOMA'
         print(
-            "Errror de Sintaxis, los procedimientos necesitan parametros ya que estos actuan como las variables usadas en el procedimiento",
+            "Error de Sintaxis, los procedimientos necesitan parametros ya que estos actuan como las variables usadas en el procedimiento",
             file=sys.stderr)
         self.terminal.append(
-            spanh_rojo + "Errror de Sintaxis, los procedimientos necesitan parametros ya que estos actuan como las variables usadas en el procedimiento" + spanb)
+            spanh_rojo + "Error de Sintaxis, los procedimientos necesitan parametros ya que estos actuan como las variables usadas en el procedimiento" + spanb)
         self.limpiar_variables()
         exit(1)
 
@@ -2542,10 +2549,10 @@ class Semantico:
     def p_llamar_function_vacio_error(self,p):
         'llamarFunction : CALL FUNCTION ID PA error PC'
         print(
-            "Errror de Sintaxis, las funciones necesitan parametros ya que estos actuan como las variables usadas en la funcion",
+            "Error de Sintaxis, las funciones necesitan parametros ya que estos actuan como las variables usadas en la funcion",
             file=sys.stderr)
         self.terminal.append(
-            spanh_rojo + "Errror de Sintaxis, las funciones necesitan parametros ya que estos actuan como las variables usadas en la funcion" + spanb)
+            spanh_rojo + "Error de Sintaxis, las funciones necesitan parametros ya que estos actuan como las variables usadas en la funcion" + spanb)
         self.limpiar_variables()
         exit(1)
 
@@ -2553,10 +2560,10 @@ class Semantico:
         'valoresCall : valor'
         if (str(p[1]).find("[") != -1):
             print(
-                "Errror de Sintaxis, no es permitido pasar arreglos, con llamado a indice como parametro ",
+                "Error de Sintaxis, no es permitido pasar arreglos, con llamado a indice como parametro ",
                 file=sys.stderr)
             self.terminal.append(
-                spanh_rojo + "Errror de Sintaxis, no es permitido pasar arreglos, con llamado a indice como parametro " + spanb)
+                spanh_rojo + "Error de Sintaxis, no es permitido pasar arreglos, con llamado a indice como parametro " + spanb)
             self.limpiar_variables()
             exit(1)
         else:
@@ -2566,10 +2573,10 @@ class Semantico:
         'valoresCall : valor COMA valoresCall'
         if (str(p[1]).find("[") != -1):
             print(
-                "Errror de Sintaxis, no es permitido pasar arreglos, con llamado a indice como parametro ",
+                "Error de Sintaxis, no es permitido pasar arreglos, con llamado a indice como parametro ",
                 file=sys.stderr)
             self.terminal.append(
-                spanh_rojo + "Errror de Sintaxis, no es permitido pasar arreglos, con llamado a indice como parametro " + spanb)
+                spanh_rojo + "Error de Sintaxis, no es permitido pasar arreglos, con llamado a indice como parametro " + spanb)
             self.limpiar_variables()
             exit(1)
         else:
@@ -2586,12 +2593,12 @@ class Semantico:
 
     def p_error(self,p):
         if (p != None):
-            print("Errror de Sintaxis en la linea " + str(p.lineno) + " en el token " + str(p.value), file=sys.stderr)
+            print("Error de Sintaxis en la linea " + str(p.lineno) + " en el token " + str(p.value), file=sys.stderr)
             self.terminal.append(
-                spanh_rojo + "Errror de Sintaxis en la linea " + str(p.lineno) + " en el token " + str(p.value) + spanb)
+                spanh_rojo + "Error de Sintaxis en la linea " + str(p.lineno) + " en el token " + str(p.value) + spanb)
         else:
-            print("Errror de Sintaxis", file=sys.stderr)
-            self.terminal.append(spanh_rojo + "Errror de Sintaxis" + spanb)
+            print("Error de Sintaxis", file=sys.stderr)
+            self.terminal.append(spanh_rojo + "Error de Sintaxis" + spanb)
         self.limpiar_variables()
         exit(1)
 
@@ -2637,7 +2644,7 @@ class Semantico:
         self.lineas_marcadas = {}
         self.ambiente_actual = 0
         self.contador += 1
-        self.tiempito = 0
+        self.tiempo = 0
         self.ambientes = 0
         self.arbolito = n_ary_tree()
 

@@ -75,7 +75,7 @@ class panel(QGraphicsView):
         self.pintar()
 
     # -------------------------------------------------------------------------------------------------
-    #       metodo publico que llama el pintado del arbol y sus lineas desde la razi
+    #       metodo publico que llama el pintado del arbol y sus lineas desde la raiz
     # -------------------------------------------------------------------------------------------------
     def pintar(self):
 
@@ -107,8 +107,7 @@ class panel(QGraphicsView):
             self.escena.addEllipse(nodo.x,nodo.y,nodo.tam,nodo.tam,pen)
 
         #texto del nodo
-        text = QGraphicsTextItem(None, self.escena)
-        text.setPlainText(str(nodo.data))
+        text = self.escena.addText(str(nodo.data))
         text.setPos(QPointF(nodo.x + 2, nodo.y - 3))
 
         x += 50

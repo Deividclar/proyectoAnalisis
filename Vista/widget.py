@@ -26,7 +26,7 @@ class widget(QWidget):
         self.terminal = QTextEdit()     #terminal del aplicativo
         self.estado = QTextEdit()       #area de estado de las variables del aplicativo
         self.terminal.setReadOnly(True) #hacemos la terminal en modo solo lectura
-        self.terminal.append(spanh+"Terminal v0.1 >>>"+spanb)
+        self.terminal.append(spanh+"Terminal v1 >>>"+spanb)
         self.estado.setReadOnly(True)   #hacemos el area de estado en modo solo lectura
         self.estado.append(spanh+'Estado Variables >>>'+spanb)
         font = QFont('Arial')           #fuente que se utilizara para el area de estado y la terminal

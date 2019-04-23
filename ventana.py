@@ -9,9 +9,10 @@ import Vista.statusbar as st
 from Modelo.lexclass import *
 import Modelo.semantico as semantico
 from Modelo.colores import *
-from Vista.grafiquita import *
+from Vista.grafica import *
+from Modelo.worker import *
 
-import threading
+import time, threading
 
 #CLASE DE LA VENTANA
 #VISTA PRINCIPAL
@@ -20,7 +21,7 @@ import threading
 #       clase ventana: -> extiende de QMainWindow
 #               reune:
 #               widget principal
-#               interfaz precargada del diseñador -> ventanita.ui
+#               interfaz precargada del diseñador -> ventana.ui
 #               acciones y control general del aplicativo
 # -------------------------------------------------------------------------------------------------
 class ventana(QMainWindow):
@@ -32,7 +33,7 @@ class ventana(QMainWindow):
         
         #SE CARGA LA INTERFAZ GRAFICA .UI
         #REALIZADA EN QTDESIGNER
-        uic.loadUi("ventanita.ui",self)
+        uic.loadUi("ventana.ui",self)
         
         #TITULO DE LA VENTANA
         self.setWindowTitle("EDITOR V.1")
@@ -55,11 +56,28 @@ class ventana(QMainWindow):
         self.sema = semantico.Semantico(self.principal.estado, self.principal.terminal, self.principal.editor)
         #hilo que manejara el analizador semantico
         self.hilo = threading.Thread()
+        #hilo que maneja el modo automatico
+        self.hiloAutomatico = threading.Thread()
 
 
         ##barra de estado inferior
         self.status = st.StatusBar()
         self.setStatusBar(self.status)
+
+        sld = QSlider(Qt.Horizontal, self)
+        sld.setFocusPolicy(Qt.NoFocus)
+        sld.setValue(50)
+        sld.setMaximumWidth(200)
+        sld.valueChanged[int].connect(self.__changeValue)
+
+        #velocidad del modo automatico
+        self.velocidad = 50;
+
+        # labelSlider = QLabel(self)
+        # labelSlider.setText('Velocidad')
+        # labelSlider.setGeometry(600, 20, 200, 30)
+
+        self.Barra.addWidget(sld)
 
         #tamaño y posicion de la ventana principal
         self.setGeometry(200, 100, 900, 600)
@@ -85,15 +103,14 @@ class ventana(QMainWindow):
         self.actionClearTerm.setIcon(QIcon('Imagenes/Bin.png'))
         #self.actionClearEst.setIcon(QIcon('Imagenes/Bin.png'))
         self.actionContinue.setIcon(QIcon('Imagenes/next.png'))
-        self.actionStop.setIcon(QIcon('Imagenes/pause.png'))
         self.actionRun.setIcon(QIcon('Imagenes/FlagGreen.png'))
         self.actionCancel.setIcon(QIcon('Imagenes/FlagRed.png'))
         self.actionExit.setIcon(QIcon('Imagenes/Cancel.png'))
-        self.actionLexer.setIcon(QIcon('Imagenes/Lightning.png'))
         self.actionInfo.setIcon(QIcon('Imagenes/Info.png'))
         self.actionBreakpoints.setIcon(QIcon('Imagenes/location.png'))
         self.actionTree.setIcon(QIcon('Imagenes/brush.png'))
         self.actionTimes.setIcon(QIcon('Imagenes/graph.png'))
+        self.actionAutomatic.setIcon(QIcon('Imagenes/graph.png'))
 
 
     #--------------------------------------------------------------------------------------------
@@ -108,13 +125,13 @@ class ventana(QMainWindow):
         self.actionClearTerm.triggered.connect(self.__limpiar_terminal)
         #self.actionClearEst.triggered.connect(self.__limpiar_estado)
         self.actionContinue.triggered.connect(self.__continue_line)
-        self.actionStop.triggered.connect(self.__stop_line)
         self.actionRun.triggered.connect(self.__run)
         self.actionCancel.triggered.connect(self.__cancel)
         self.actionExit.triggered.connect(self.__salir)
         self.actionBreakpoints.triggered.connect(self.__mostrarLineasMarcadas)
         self.actionInfo.triggered.connect(self.__info)
         self.actionTimes.triggered.connect(self.__mostrarTiempos)
+        self.actionAutomatic.triggered.connect(self.__automatico)
 
         #self.accion_lineas.triggered.connect(self.mostrarLineasMarcadas)
         #self.accion_tiempos.triggered.connect(self.mostrarTiempos)
@@ -138,7 +155,6 @@ class ventana(QMainWindow):
         self.actionOpen.setShortcut("Ctrl+O")
         self.actionSave.setShortcut("Ctrl+S")
         self.actionContinue.setShortcut("Ctrl+R")
-        self.actionStop.setShortcut("Ctrl+L")
         self.actionRun.setShortcut("Ctrl+E")
         self.actionCancel.setShortcut("Ctrl-Q")
 
@@ -151,9 +167,7 @@ class ventana(QMainWindow):
         self.Barra.addAction(self.actionSave)
         self.Barra.addSeparator()
         self.Barra.addAction(self.actionLine)
-        self.Barra.addAction(self.actionLexer)
         self.Barra.addAction(self.actionContinue)
-        self.Barra.addAction(self.actionStop)
         self.Barra.addSeparator()
         self.Barra.addAction(self.actionRun)
         self.Barra.addAction(self.actionCancel)
@@ -164,6 +178,8 @@ class ventana(QMainWindow):
         self.Barra.addAction(self.actionBreakpoints)
         self.Barra.addAction(self.actionTree)
         self.Barra.addAction(self.actionTimes)
+        self.Barra.addSeparator()
+        self.Barra.addAction(self.actionAutomatic)
 
 
         #self.Barra.addAction(self.accion_lineas)
@@ -176,7 +192,7 @@ class ventana(QMainWindow):
         msg = QMessageBox()
         msg.setIcon(QMessageBox.Information)
 
-        msg.setText("Editor V0 \n\n\nAngey Velez Vela \nDeivid Steven Gonzalez\n\n\nUniversidad de caldas\n2019")
+        msg.setText("Editor V1 \n\n\nAngey Velez Vela \nDeivid Steven Gonzalez\n\n\nUniversidad de caldas\n2019")
         msg.exec_()
 
     # -------------------------------------------------------------------------------------------------
@@ -231,7 +247,7 @@ class ventana(QMainWindow):
         pos = self.principal.editor.getPosicion()
         texto = self.__getLine(pos)
 
-        if(self.sema != None):
+        if(self.sema != None and self.hilo.isAlive()):
             if self.sema.variables_actuales != None:
                 self.principal.estado.clear() #limpiamos las variables anteriores
                 self.__mostrar_variables(self.sema.variables_actuales) #se muestran las variables
@@ -246,6 +262,13 @@ class ventana(QMainWindow):
             nodo.activo = False #se hace el nodo como no activo
 
             self.sema.avanzar = False #se para el avance de linea para poder que sea paso a paso
+        else:
+            msg = QMessageBox()
+            msg.setIcon(QMessageBox.Warning)
+            msg.setWindowTitle("Paso a paso")
+
+            msg.setText("Debe compilar el código, antes de ver paso a paso")
+            msg.exec_()
 
 
     # -------------------------------------------------------------------------------------------------
@@ -253,17 +276,19 @@ class ventana(QMainWindow):
     # -------------------------------------------------------------------------------------------------
     def __mostrarLineasMarcadas(self):
         #lineas = self.principal.editor.getMarcadas()
-        msg = QMessageBox()
-        msg.setIcon(QMessageBox.Information)
+        if not self.sema.lineas_marcadas:
+            msg = QMessageBox()
+            msg.setIcon(QMessageBox.Information)
+            msg.setWindowTitle("Breakpoints")
 
-        msg.setText("Recuerde que para para establecer los puntos de ruptura\ndebe presionar sobre el numero de linea, y asi empezara a contar."
-                    "\n\nLa informacion acerca de los puntos de ruptura se muestra en la consola, encerrados entre corchetes, donde\n\n"
-                    "1). El primer valor corresponde a la linea\n"+
-                    "2). El segundo valor las veces que paso por ese punto")
-        msg.exec_()
-
-        lineas = self.sema.lineas_marcadas
-        self.principal.terminal.append(str(lineas))
+            msg.setText("Recuerde que para para establecer los puntos de ruptura\ndebe presionar sobre el numero de linea, y asi empezara a contar."
+                        "\n\nLa informacion acerca de los puntos de ruptura se muestra en la consola, encerrados entre corchetes, donde\n\n"
+                        "1). El primer valor corresponde a la linea\n"+
+                        "2). El segundo valor las veces que paso por ese punto")
+            msg.exec_()
+        else:
+            lineas = self.sema.lineas_marcadas
+            self.principal.terminal.append(str(lineas))
         #self.principal.estado.show()
 
     # -------------------------------------------------------------------------------------------------
@@ -273,7 +298,7 @@ class ventana(QMainWindow):
         self.dicci = self.sema.dicci
         self.brek = self.sema.dicci_break
         self.principal.terminal.append(str(self.dicci))
-        grafica = grafiquita(self.dicci,self.brek)
+        grafica = grafica(self.dicci,self.brek)
         #grafica.exec()
 
 
@@ -309,28 +334,21 @@ class ventana(QMainWindow):
         # print("----------------------------------------------------")
                 self.principal.estado.append("----------------------------------------------------")
 
-    # -------------------------------------------------------------------------------------------------
-    #           accion removida en la ultima version -> pausaba la ejecucion
-    # -------------------------------------------------------------------------------------------------
-    def __stop_line(self):
-        msg = QMessageBox()
-        msg.setIcon(QMessageBox.Information)
+    def __changeValue(self, value):
+        self.velocidad = value
+        print(value)
 
-        msg.setText("Esta accion fue removida")
-        msg.exec_()
+    def __automatico(self):
+        if (not self.hiloAutomatico.isAlive()):
 
+            self.hiloAutomatico = threading.Thread(target=self.__b);
+            self.hiloAutomatico.start()
+            
 
-    # -------------------------------------------------------------------------------------------------
-    #           accion removida -> mostraba los tokens
-    # -------------------------------------------------------------------------------------------------
-    def __analizar(self,text):
-       #self.actionLexer.setChecked(True) 
-        if self.actionLexer.isChecked():
-            self.principal.terminal.append("checked")
-            self.lexico.analizar(text,self.principal.estado)
-        else:
-            self.principal.terminal.append("not checked")
-
+    def __b(self):
+        while (self.sema != None):
+            self.__continue_line();
+            time.sleep(self.velocidad * 0.02)
 
     # -------------------------------------------------------------------------------------------------
     #           metodo principal inicia el hilo que hara el analisis sintactico y semantico

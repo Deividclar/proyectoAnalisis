@@ -48,11 +48,9 @@ class editor(QsciScintilla):
         self.setMarginSensitivity(1,True)
         
         #CREAMOS LA SEÑA PARA AGREGAR LINEA MARCADA
-        # self.connect(self,
-        #     SIGNAL('marginClicked(int, int, Qt::KeyboardModifiers)'),
-        #     self.on_margin_clicked)
+        self.marginClicked.connect(self.on_margin_clicked)
         #SE DEFINE EL ICONO A MOSTRAR EN LA LINEA MARCADA
-        self.markerDefine(QsciScintilla.Circle ,
+        self.markerDefine(QsciScintilla.RightTriangle ,
             self.ARROW_MARKER_NUM)
         self.setMarkerBackgroundColor(QColor("#FF6C3B"),
             self.ARROW_MARKER_NUM)
@@ -104,7 +102,7 @@ class editor(QsciScintilla):
             #se desmarca el breackpoint
             self.markerAdd(nline, self.ARROW_MARKER_NUM)
             if not self.lineas_marcadas.__contains__(nline):
-                self .lineas_marcadas.append(nline)
+                self.lineas_marcadas.append(nline)
 
     # -------------------------------------------------------------------------------------------------
     #       metodo que inicializa la api, con el contenido de los tokens de la clase Lexico

@@ -1,6 +1,6 @@
 import ply.lex as lex
 import sys
-from Modelo.colores import *
+from .colores import *
 
 class Lexico:
 
