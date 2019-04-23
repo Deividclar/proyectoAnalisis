@@ -36,7 +36,7 @@ class ventana(QMainWindow):
         uic.loadUi("ventana.ui",self)
         
         #TITULO DE LA VENTANA
-        self.setWindowTitle("EDITOR V.1")
+        self.setWindowTitle("EDITOR")
         #self.accion_lineas = QAction("Marca", self.Barra)
         #self.accion_tiempos = QAction("Timepos",self.Barra)
         self.principal = widg.widget()              #incializa todos los compentes principales de la aplicacion
@@ -192,7 +192,7 @@ class ventana(QMainWindow):
         msg = QMessageBox()
         msg.setIcon(QMessageBox.Information)
 
-        msg.setText("Editor V1 \n\n\nAngey Velez Vela \nDeivid Steven Gonzalez\n\n\nUniversidad de caldas\n2019")
+        msg.setText("Editor \n\n\nAngey Velez Vela \nDeivid Steven Gonzalez\n\n\nUniversidad de caldas\n2019")
         msg.exec_()
 
     # -------------------------------------------------------------------------------------------------
