@@ -120,7 +120,7 @@ class Semantico:
 
         #self.limpiar_variables()  # limpiamos las variables despues de que termine la ejecucion
         print(self.tiempo)
-        self.terminal.append("Terminado en :"+str(self.tiempo))
+        self.terminal.append("Terminado en: "+str(self.tiempo)+" segundos")
         self.dicci[self.contador] = self.tiempo #se añade el tiempo al diccionario
 
         sum=0

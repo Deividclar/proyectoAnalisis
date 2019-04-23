@@ -109,9 +109,9 @@ class ventana(QMainWindow):
         self.actionRun.setIcon(QIcon('Imagenes/FlagGreen.png'))
         self.actionCancel.setIcon(QIcon('Imagenes/FlagRed.png'))
         self.actionExit.setIcon(QIcon('Imagenes/Cancel.png'))
-        self.actionInfo.setIcon(QIcon('Imagenes/Info.png'))
+        #self.actionInfo.setIcon(QIcon('Imagenes/Info.png'))
         self.actionBreakpoints.setIcon(QIcon('Imagenes/location.png'))
-        self.actionTree.setIcon(QIcon('Imagenes/brush.png'))
+        #self.actionTree.setIcon(QIcon('Imagenes/brush.png'))
         self.actionAutomatic.setIcon(QIcon('Imagenes/graph.png'))
 
 
@@ -173,11 +173,11 @@ class ventana(QMainWindow):
         self.Barra.addAction(self.actionRun)
         self.Barra.addAction(self.actionCancel)
         self.Barra.addSeparator()
-        self.Barra.addAction(self.actionInfo)
+        #self.Barra.addAction(self.actionInfo)
         self.Barra.addAction(self.actionClearTerm)
         #self.Barra.addAction(self.actionClearEst)
         self.Barra.addAction(self.actionBreakpoints)
-        self.Barra.addAction(self.actionTree)
+        #self.Barra.addAction(self.actionTree)
         self.Barra.addSeparator()
         self.Barra.addAction(self.actionAutomatic)
 
@@ -308,14 +308,14 @@ class ventana(QMainWindow):
                 # print("Nombre de la variable, de tipo ARRAY " + str(k) + " Tipo de ARRAY " + str(
                 #    v[0][0]) + " Tamaño " + str(v[0][1]))
                 # print("Contenido " + str(v[1]))
-                self.principal.estado.append(spanh_azul_oscuro + "Var: " + spanb + spanh_verde + str(
+                self.principal.estado.append(spanh_azul_oscuro + "Variable: " + spanb + spanh_verde + str(
                     k) + spanb + spanh_azul_oscuro + " ARRAY :" + str(v[0][0]) + spanb + " Tamaño " + str(v[0][1]))
-                self.principal.estado.append(spanh_azul_oscuro + "Contenido " + str(v[1]) + spanb)
+                self.principal.estado.append(spanh_azul_oscuro + "Valor: " + str(v[1]) + spanb)
 
             else:
                 # print(
                 #    "Nombre de la variable " + str(k) + " Tipo de dato " + str(v[0]))
-                self.principal.estado.append(spanh_azul_oscuro + "Var : " + spanb + spanh_verde + str(
+                self.principal.estado.append(spanh_azul_oscuro + "Variable: " + spanb + spanh_verde + str(
                     k) + spanb + spanh_azul_oscuro + " Tipo de dato " + str(v[0]) + spanb)
                 if (v[0] == 'GRAPH'):
                     #    print("Nodos " + str(v[1].nodes()))
@@ -324,7 +324,7 @@ class ventana(QMainWindow):
                     self.principal.estado.append(spanh_azul_oscuro + "Aristas " + str(v[1].edges()) + spanb)
                 else:
                     #    print("Contenido " + str(v[1]))
-                    self.principal.estado.append(spanh_azul_oscuro + "Contenido " + str(v[1]) + spanb)
+                    self.principal.estado.append(spanh_azul_oscuro + "Valor: " + str(v[1]) + spanb)
         # print("----------------------------------------------------")
                 self.principal.estado.append("----------------------------------------------------")
 
