@@ -9,7 +9,6 @@ import Vista.statusbar as st
 from Modelo.lexclass import *
 import Modelo.semantico as semantico
 from Modelo.colores import *
-from Modelo.worker import *
 
 import time, threading
 

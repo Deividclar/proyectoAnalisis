@@ -199,11 +199,6 @@ QToolButton:hover{
     <string>Tree</string>
    </property>
   </action>
-  <action name="actionTimes">
-   <property name="text">
-    <string>Times</string>
-   </property>
-  </action>
   <action name="actionAutomatic">
    <property name="text">
     <string>Automatic Mode</string>

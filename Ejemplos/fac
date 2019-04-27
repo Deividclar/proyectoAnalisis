@@ -20,6 +20,7 @@ VAR
 	RETURN res;
     END
 BEGIN
+    j <-- 0;
     i <-- CALL FUNCTION fac(5,j);
     WRITELN(STR(i));
 END
