@@ -21,27 +21,7 @@ Para satisfacer los requisitos planteados se decidió utilizar como lenguaje de 
 ```bash
     pip3 install QScintilla
 ```
-- Matplotlib http://matplotlib.org 
-```bash
-    pip3 install matplotlib
-```
 - NetworkX https://networkx.github.io/ 
 ```bash
     pip3 install networkx
 ```
-
-### Preview
-
-Editor de código
-
-![editor](preview/editor.png)
-
-Mensaje al dar click sobre algú nodo(ambiente) del árbol.
-
-![ambientes](preview/ambientes.png)
-
-Breakpoints en el editor.![breakpoint](preview/breakpoint.png)
-
-Gráfica de tiempos de ejecución
-
-![tiempos](preview/tiempos.png)
